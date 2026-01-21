@@ -13,4 +13,17 @@ export default defineSchema({
     profile_url: v.optional(v.string()), // Explicit profile URL
     last_updated: v.optional(v.number()), // Unix timestamp
   }),
+
+  twitchOAuth: defineTable({
+    access_token: v.string(),
+    refresh_token: v.string(),
+    expires_at: v.number(), // Unix timestamp
+    scope: v.string(), // Space-delimited scopes
+    token_type: v.string(), // "bearer"
+  }),
+
+  twitchOAuthState: defineTable({
+    state: v.string(), // The state string
+    expires_at: v.number(), // Unix timestamp when state expires
+  }),
 });

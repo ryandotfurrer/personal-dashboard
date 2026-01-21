@@ -8,6 +8,8 @@
  * @module
  */
 
+import type * as cron from "../cron.js";
+import type * as http from "../http.js";
 import type * as socials from "../socials.js";
 
 import type {
@@ -17,6 +19,8 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  cron: typeof cron;
+  http: typeof http;
   socials: typeof socials;
 }>;
 

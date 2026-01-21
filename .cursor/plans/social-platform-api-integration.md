@@ -12,7 +12,7 @@ todos:
   - id: schema-last-updated
     content: Add optional last_updated timestamp field to schema
     status: completed
-  
+
   # Step 2: Create API Integration Actions
   - id: action-twitter
     content: Create fetchTwitterMetrics action (Twitter/X API v2, get follower_count and profile_url)
@@ -25,33 +25,33 @@ todos:
     status: pending
   - id: action-twitch
     content: Create fetchTwitchMetrics action (Twitch Helix API, get follower_count, subscriber_count, and profile_url)
-    status: pending
+    status: completed
   - id: action-youtube
     content: Create fetchYouTubeMetrics action (YouTube Data API v3, get subscriber_count as follower_count and profile_url)
-    status: pending
+    status: completed
   - id: action-github
     content: Create fetchGitHubMetrics action (GitHub REST API, get follower_count and profile_url)
-    status: pending
-  
+    status: completed
+
   # Step 3: Create Database Mutations
   - id: mutation-update-metrics
     content: Create updateSocialMetrics mutation to upsert social platform data
-    status: pending
+    status: completed
   - id: action-sync-platform
     content: Create syncPlatform action to sync a single platform (fetch + update)
-    status: pending
+    status: completed
   - id: action-sync-all
     content: Create syncAllPlatforms action to orchestrate all platform syncs
-    status: pending
-  
+    status: completed
+
   # Step 4: Set Up Scheduled Updates
   - id: cron-create-file
     content: Create convex/cron.ts file
-    status: pending
+    status: completed
   - id: cron-configure-job
     content: Configure daily cron job at 00:00 UTC to run syncAllPlatforms
-    status: pending
-  
+    status: completed
+
   # Step 5: Create HTTP API Endpoints
   - id: http-create-file
     content: Create convex/http.ts file
@@ -68,7 +68,7 @@ todos:
   - id: http-cors
     content: Add CORS headers to HTTP endpoints for external project access
     status: pending
-  
+
   # Step 6: Update Socials Component
   - id: component-last-updated
     content: Display last_updated timestamp for each platform card
@@ -110,32 +110,38 @@ graph TD
 ## Data Requirements Per Platform
 
 ### Twitter/X
+
 - **follower_count**: Number of followers
 - **profile_url**: Profile URL (e.g., https://twitter.com/username)
 - API field mapping: `public_metrics.followers_count` → `follower_count`
 
 ### Bluesky
+
 - **follower_count**: Number of followers
 - **profile_url**: Profile URL (e.g., https://bsky.app/profile/username.bsky.social)
 - API field mapping: `followersCount` → `follower_count`
 
 ### LinkedIn
+
 - **follower_count**: Number of followers
 - **profile_url**: Profile URL
 - API field mapping: Check LinkedIn API v2 response structure
 
 ### Twitch
+
 - **follower_count**: Number of followers (free tier)
 - **subscriber_count**: Number of subscribers (paid tier)
 - **profile_url**: Channel URL (e.g., https://twitch.tv/username)
 - API field mapping: `followers` → `follower_count`, `subscribers` → `subscriber_count`
 
 ### YouTube
+
 - **follower_count**: Number of subscribers (free tier - mapped to follower_count for consistency)
 - **profile_url**: Channel URL
 - API field mapping: `statistics.subscriberCount` → `follower_count` (note: YouTube calls them "subscribers" but we store as followers to maintain free/paid distinction)
 
 ### GitHub
+
 - **follower_count**: Number of followers
 - **profile_url**: Profile URL (e.g., https://github.com/username)
 - API field mapping: `followers` → `follower_count`
@@ -149,6 +155,7 @@ graph TD
 **IMPORTANT**: Make all new fields optional to avoid errors with existing data.
 
 Update schema:
+
 ```typescript
 socials: defineTable({
   follower_count: v.float64(), // existing - free tier metric (all platforms)
@@ -158,10 +165,11 @@ socials: defineTable({
   subscriber_count: v.optional(v.float64()), // Paid tier metric (Twitch only)
   profile_url: v.optional(v.string()), // Explicit profile URL
   last_updated: v.optional(v.number()), // Unix timestamp
-})
+});
 ```
 
 **Data Model Semantics:**
+
 - `follower_count` = Free tier metric (Twitter, Bluesky, LinkedIn, GitHub, YouTube, Twitch)
 - `subscriber_count` = Paid/premium tier metric (Twitch only)
 - YouTube's "subscribers" are stored as `follower_count` to maintain semantic consistency
@@ -171,12 +179,14 @@ socials: defineTable({
 **File:** `convex/socials.ts` (expand existing file)
 
 Create Convex actions (not queries) to fetch from external APIs. Each action should:
+
 - Accept platform identifier or username/handle
 - Fetch the required metrics from respective API
 - Return structured data matching our schema
 - Handle API errors gracefully
 
 Actions to create:
+
 - `fetchTwitterMetrics` - Twitter/X API v2
 - `fetchBlueskyMetrics` - Bluesky ATProto API
 - `fetchLinkedInMetrics` - LinkedIn API
@@ -225,32 +235,39 @@ Actions to create:
 Required API keys/credentials for free tiers:
 
 #### Twitter/X
+
 - `TWITTER_BEARER_TOKEN` - OAuth 2.0 Bearer token from Twitter Developer Portal
 
 #### Bluesky
+
 - `BLUESKY_HANDLE` - Your Bluesky handle (e.g., username.bsky.social)
 - `BLUESKY_APP_PASSWORD` - App password from Bluesky settings
 
 #### LinkedIn
+
 - `LINKEDIN_ACCESS_TOKEN` - OAuth 2.0 access token
 - `LINKEDIN_PERSON_ID` - Your LinkedIn person ID (URN format)
 
 #### Twitch
+
 - `TWITCH_CLIENT_ID` - Client ID from Twitch Developer Console
 - `TWITCH_CLIENT_SECRET` - Client secret
 - `TWITCH_USERNAME` - Your Twitch username
 
 #### YouTube
+
 - `YOUTUBE_API_KEY` - API key from Google Cloud Console
 - `YOUTUBE_CHANNEL_ID` - Your YouTube channel ID
 
 #### GitHub
+
 - `GITHUB_USERNAME` - Your GitHub username (public API, no auth required)
 - `GITHUB_TOKEN` - Optional, for higher rate limits (personal access token)
 
 ## Platform-Specific Implementation Notes
 
 ### Twitter/X
+
 - **API**: Twitter API v2
 - **Endpoint**: `GET /2/users/by/username/{username}?user.fields=public_metrics,username`
 - **Auth**: OAuth 2.0 Bearer token
@@ -258,6 +275,7 @@ Required API keys/credentials for free tiers:
 - **Rate Limits**: Varies by tier (Essential: 10,000 tweets/month)
 
 ### Bluesky
+
 - **API**: ATProto (Bluesky's protocol)
 - **Endpoint**: `GET https://public.api.bsky.app/xrpc/app.bsky.actor.getProfile?actor={handle}`
 - **Auth**: No auth required for profile lookup (public API). Handle must be formatted as `username.bsky.social` or DID
@@ -265,20 +283,25 @@ Required API keys/credentials for free tiers:
 - **Rate Limits**: ~3000 requests/hour
 
 ### LinkedIn
+
 - **API**: LinkedIn API v2
 - **Endpoint**: `GET /v2/people/(id~)` or `/v2/networkSizes`
 - **Auth**: OAuth 2.0 access token
 - **Free Tier**: Limited requests
 - **Rate Limits**: Varies by endpoint
+- **Note**: Currently skipped due to API documentation complexity. Follower count not available for personal profiles via API. Returns 0 for follower_count, only provides profile_url.
 
 ### Twitch
+
 - **API**: Twitch Helix API
-- **Endpoint**: `GET /helix/users/follows?to_id={user_id}` for followers, `/helix/channels?broadcaster_id={user_id}` for subscribers
-- **Auth**: OAuth 2.0 Client Credentials flow
+- **Endpoint**: `GET /helix/channels/followers?broadcaster_id={broadcaster_id}` for followers, `/helix/channels?broadcaster_id={user_id}` for subscribers
+- **Auth**: OAuth 2.0 Client Credentials flow (App Access Token) for follower count
 - **Free Tier**: Public API
 - **Rate Limits**: 800 requests/minute
+- **Note**: Follower count works with App Access Token (Client Credentials). Subscriber count requires User Access Token with `channel:read:subscriptions` scope.
 
 ### YouTube
+
 - **API**: YouTube Data API v3
 - **Endpoint**: `GET /youtube/v3/channels?part=statistics&id={channel_id}`
 - **Auth**: API key (no OAuth needed for public data)
@@ -286,6 +309,7 @@ Required API keys/credentials for free tiers:
 - **Rate Limits**: Quota-based (1 unit per read request)
 
 ### GitHub
+
 - **API**: GitHub REST API
 - **Endpoint**: `GET /users/{username}`
 - **Auth**: Optional (personal access token for rate limits)
@@ -329,6 +353,7 @@ All credentials are available in `.env.local`. Platform handles:
 ## Implementation Progress
 
 ### Step 1: Update Database Schema ✅ COMPLETED
+
 - ✅ Added optional `subscriber_count` field (v.optional(v.float64())) for Twitch paid tier
 - ✅ Added optional `profile_url` field (v.optional(v.string())) for explicit profile URLs
 - ✅ Added optional `last_updated` field (v.optional(v.number())) for Unix timestamp tracking
@@ -336,39 +361,62 @@ All credentials are available in `.env.local`. Platform handles:
 - Schema maintains backward compatibility with existing `follower_count`, `platform`, and `url` fields
 
 **Findings:**
+
 - Convex schema uses `v.optional()` wrapper for optional fields
 - Existing required fields (`follower_count`, `platform`, `url`) remain unchanged
 - Schema update is backward compatible - existing records will work without new fields
 
-### Step 2: Create API Integration Actions ⏳ IN PROGRESS
+### Step 2: Create API Integration Actions ✅ COMPLETED
+
 - ✅ `fetchTwitterMetrics` - Twitter/X API v2
 - ✅ `fetchBlueskyMetrics` - Bluesky ATProto API
-- ⏳ `fetchLinkedInMetrics` - LinkedIn API v2
-- ⏳ `fetchTwitchMetrics` - Twitch Helix API
-- ⏳ `fetchYouTubeMetrics` - YouTube Data API v3
-- ⏳ `fetchGitHubMetrics` - GitHub REST API
+- 🛑 `fetchLinkedInMetrics` - LinkedIn API v2 — on hold for nowd
+- ✅ `fetchTwitchMetrics` - Twitch Helix API
+- ✅ `fetchYouTubeMetrics` - YouTube Data API v3
+- ✅ `fetchGitHubMetrics` - GitHub REST API
 
 **Findings:**
+
 - **Twitter**: `/2/users/me` requires user context auth; use `/2/users/by/username/{username}` with bearer token for public data. API calls cost $0.010 per call.
 - **Bluesky**: Public profile endpoint requires no auth. Handle must be formatted as `username.bsky.social` or DID. Response field is `followersCount`.
+- **LinkedIn**: Follower count not easily available via API for personal profiles. Returns 0 as placeholder. Uses `/v2/people` endpoint with vanityName for profile URL. Currently marked as pending due to API documentation complexity.
+- **Twitch**: Requires OAuth token via client credentials flow. Follower count uses `/helix/channels/followers` endpoint which provides total count directly. Subscriber count requires User Access Token with `channel:read:subscriptions` scope (not implemented with current App Access Token).
+- **YouTube**: Uses `/youtube/v3/channels` endpoint with statistics part. Maps `subscriberCount` to `follower_count` for consistency.
+- **GitHub**: Uses `/users/{username}` endpoint. Optional token for higher rate limits. Returns `followers` field as `follower_count`.
 
-### Step 3: Create Database Mutations ⏳ PENDING
-- ⏳ `updateSocialMetrics` mutation
-- ⏳ `syncPlatform` action
-- ⏳ `syncAllPlatforms` action
+### Step 3: Create Database Mutations ✅ COMPLETED
 
-### Step 4: Set Up Scheduled Updates ⏳ PENDING
-- ⏳ Create `convex/cron.ts` file
-- ⏳ Configure daily cron job at 00:00 UTC
+- ✅ `updateSocialMetrics` mutation - Upserts social platform data with optional fields
+- ✅ `syncPlatform` action - Syncs a single platform (fetch + update)
+- ✅ `syncAllPlatforms` action - Orchestrates all platform syncs with error handling
 
-### Step 5: Create HTTP API Endpoints ⏳ PENDING
+**Findings:**
+
+- Mutation uses upsert pattern (find by platform, update or insert)
+- Actions use `api` from `./_generated/api` to reference other actions/mutations
+- `syncAllPlatforms` uses `Promise.allSettled` to handle partial failures gracefully
+- Platform names are normalized to lowercase for consistency
+
+### Step 4: Set Up Scheduled Updates ✅ COMPLETED
+
+- ✅ Create `convex/cron.ts` file
+- ✅ Configure daily cron job at 00:00 UTC using `cronJobs().daily()`
+
+**Findings:**
+
+- Convex uses `cronJobs()` API with `daily()` method for scheduled jobs
+- Cron job configured to run `syncAllPlatforms` at midnight UTC daily
+
+### Step 5: Create HTTP API Endpoints ⏳ PENDING (Stopped after Step 4)
+
 - ⏳ Create `convex/http.ts` file
 - ⏳ GET `/api/socials` endpoint
 - ⏳ GET `/api/socials/:platform` endpoint
 - ⏳ POST `/api/socials/sync` endpoint
 - ⏳ Add CORS headers
 
-### Step 6: Update Socials Component ⏳ PENDING
+### Step 6: Update Socials Component ⏳ PENDING (Stopped after Step 4)
+
 - ⏳ Display `last_updated` timestamp
 - ⏳ Add "Sync All" button
 - ⏳ Add individual sync buttons
