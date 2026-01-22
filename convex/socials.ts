@@ -1,6 +1,7 @@
 import { query, action, mutation } from "./_generated/server";
 import { v } from "convex/values";
 import { api } from "./_generated/api";
+import type { Doc } from "./_generated/dataModel";
 
 export const listSocials = query({
   args: {},
@@ -642,7 +643,7 @@ export const cleanupDuplicateSocials = action({
       }
 
       // Find the record to keep (most recent last_updated, or highest _id if no timestamp)
-      const recordToKeep = records.reduce((prev: SocialRecord, current: SocialRecord) => {
+      const recordToKeep = records.reduce((prev: Doc<"socials">, current: Doc<"socials">) => {
         const prevTime = prev.last_updated ?? 0;
         const currentTime = current.last_updated ?? 0;
         if (currentTime > prevTime) {
