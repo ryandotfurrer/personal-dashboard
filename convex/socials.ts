@@ -457,11 +457,11 @@ export const updateSocialMetrics = mutation({
     // Normalize platform name with proper capitalization and alias handling
     const normalizedPlatform = normalizePlatformName(args.platform);
 
-    // Find existing record by platform (case-insensitive lookup)
-    const allSocials = await ctx.db.query("socials").collect();
-    const existing = allSocials.find(
-      (s) => normalizePlatformName(s.platform) === normalizedPlatform
-    );
+    // Find existing record by platform using indexed query
+    const existing = await ctx.db
+      .query("socials")
+      .withIndex("by_platform", (q) => q.eq("platform", normalizedPlatform))
+      .first();
 
     if (existing) {
       // Update existing record

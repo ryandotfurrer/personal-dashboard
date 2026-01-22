@@ -12,7 +12,7 @@ export default defineSchema({
     subscriber_count: v.optional(v.float64()), // Paid tier metric (Twitch only)
     profile_url: v.optional(v.string()), // Explicit profile URL
     last_updated: v.optional(v.number()), // Unix timestamp
-  }),
+  }).index("by_platform", ["platform"]),
 
   twitchOAuth: defineTable({
     access_token: v.string(),
