@@ -601,15 +601,7 @@ export const cleanupDuplicateSocials = action({
   args: {},
   handler: async (ctx): Promise<{ deleted: number; kept: number; total: number }> => {
     // Query all socials records
-    const allSocials = await ctx.runQuery(api.socials.listSocials) as Array<{
-      _id: string;
-      platform: string;
-      follower_count: number;
-      subscriber_count?: number;
-      profile_url?: string;
-      url: string;
-      last_updated?: number;
-    }>;
+    const allSocials = await ctx.runQuery(api.socials.listSocials) as Doc<"socials">[];
 
     // Group by normalized platform name
     const groups = new Map<string, typeof allSocials>();
