@@ -1,10 +1,10 @@
+import { NavSidebar } from "@/components/nav-sidebar";
+import { ThemeProvider } from "@/components/theme-provider";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Inter } from "next/font/google";
-import "./globals.css";
-import { ThemeProvider } from "@/components/theme-provider"
 import { ConvexClientProvider } from "./ConvexClientProvider";
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
-import { NavSidebar } from "@/components/nav-sidebar";
+import "./globals.css";
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-sans' });
 
@@ -41,6 +41,9 @@ export default function RootLayout({
         >
           <SidebarProvider>
             <NavSidebar />
+            {/* <div className="gap-2 p-2 flex flex-col">
+              <SidebarTrigger />
+            </div> */}
             <ConvexClientProvider>
               {children}
             </ConvexClientProvider>

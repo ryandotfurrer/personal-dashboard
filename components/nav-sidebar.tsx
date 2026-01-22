@@ -4,12 +4,9 @@ import {
   SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
-  SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
-  SidebarMenuItem,
-  SidebarRail,
-  SidebarTrigger
+  SidebarMenuItem
 } from "@/components/ui/sidebar"
 import { CalendarCheck, Home, ListTodo, LogOut, MessageCircle, NotebookText, NotepadText } from "lucide-react"
 import { ModeToggle } from "./mode-toggle"
@@ -74,9 +71,6 @@ export function NavSidebar() {
   return (
     <Sidebar collapsible="icon">
       <SidebarContent>
-        <SidebarHeader>
-          <SidebarTrigger className="text-muted-foreground" />
-        </SidebarHeader>
         <SidebarGroup>
           <SidebarGroupContent>
             <SidebarMenu>
@@ -111,7 +105,6 @@ export function NavSidebar() {
           ))}
         </SidebarMenu>
       </SidebarFooter>
-      {/* <SidebarRail /> */}
     </Sidebar>
   )
 }

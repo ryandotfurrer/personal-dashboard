@@ -221,7 +221,7 @@ export default function Socials() {
     <section className="flex flex-col gap-6">
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-semibold">Social Metrics</h2>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-4">
           {/* Success/Error Message */}
           {refreshAllResult && (
             <div className="flex items-center gap-1.5 text-sm animate-fade-slide-up">
@@ -329,7 +329,7 @@ export default function Socials() {
           </AlertDialog>
         </div>
       </div>
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6">
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6">
         {socials?.map(
           ({
             _id,
@@ -349,8 +349,8 @@ export default function Socials() {
                 key={_id}
                 className="flex flex-col gap-3 border rounded-lg p-3 min-w-0"
               >
-                <div className="flex items-start justify-between">
-                  <p className="font-semibold">{platform}</p>
+                <div className="flex items-start justify-between min-w-0">
+                  <p className="font-semibold truncate">{platform}</p>
                   {(() => {
                     const result = platformResults.get(platformKey);
                     const isRefreshing = refreshingPlatform === platformKey;
@@ -440,22 +440,22 @@ export default function Socials() {
                     );
                   })()}
                 </div>
-                <div className="flex flex-col gap-1.5">
-                  <div className="flex items-baseline gap-2">
-                    <span className="font-mono tabular-nums text-2xl">
+                <div className="flex flex-col gap-1.5 overflow-hidden">
+                  <div className="flex items-baseline gap-2 min-w-0">
+                    <span className="font-mono tabular-nums text-2xl truncate">
                       {follower_count}
                     </span>
-                    <span className="font-mono text-xs text-muted-foreground">
+                    <span className="font-mono text-xs text-muted-foreground shrink-0">
                       followers
                     </span>
                   </div>
                   {subscriber_count !== undefined && subscriber_count > 0 && (
-                    <span className="font-mono tabular-nums text-xs text-muted-foreground">
+                    <span className="font-mono tabular-nums text-xs text-muted-foreground truncate">
                       {subscriber_count} subscribers
                     </span>
                   )}
                 </div>
-                <div className="flex flex-col gap-1.5">
+                <div className="flex flex-col gap-1.5 overflow-hidden">
                   {last_updated ? (
                     <p
                       className={cn(
