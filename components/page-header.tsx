@@ -24,8 +24,10 @@ export default function PageHeader({ icon: Icon, title }: PageHeaderProps) {
             <Separator orientation="vertical" />
           </div>
         </div>
-        <Icon className="size-4" />
-        <h1>{title}</h1>
+        <div className="flex items-center gap-2">
+          <Icon className="size-4" />
+          <h1>{title}</h1>
+        </div>
       </div>
     </header>
   );

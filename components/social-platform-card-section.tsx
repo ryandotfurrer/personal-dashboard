@@ -186,7 +186,7 @@ export default function SocialPlatformCardSection() {
 
   return (
     <section className="flex flex-col gap-6">
-      <SectionHeader title="Social Metrics" description="Update all social metrics at once" action={
+      <SectionHeader title="Social Metrics" id="social-metrics" action={
         <SocialsRefreshAllButton
           refreshingAll={refreshingAll}
           refreshingPlatform={refreshingPlatform}
