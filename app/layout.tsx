@@ -31,7 +31,7 @@ export default function RootLayout({
   return (
     <html lang="en" className={inter.variable} suppressHydrationWarning>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-sidebar`}
       >
         <ThemeProvider
           attribute="class"
@@ -39,11 +39,8 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <SidebarProvider>
+          <SidebarProvider className="p-2">
             <NavSidebar />
-            {/* <div className="gap-2 p-2 flex flex-col">
-              <SidebarTrigger />
-            </div> */}
             <ConvexClientProvider>
               {children}
             </ConvexClientProvider>

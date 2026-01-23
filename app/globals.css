@@ -80,7 +80,7 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
-  
+
   /* Animation easing functions */
   --ease-out-quad: cubic-bezier(0.25, 0.46, 0.45, 0.94);
   --ease-out-cubic: cubic-bezier(0.215, 0.61, 0.355, 1);
@@ -95,7 +95,7 @@
   --card-foreground: oklch(0.985 0 0);
   --popover: oklch(0.205 0 0);
   --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.87 0.00 0);
+  --primary: oklch(0.87 0 0);
   --primary-foreground: oklch(0.205 0 0);
   --secondary: oklch(0.269 0 0);
   --secondary-foreground: oklch(0.985 0 0);
@@ -129,6 +129,7 @@
   body {
     @apply bg-background text-foreground;
   }
+
   button:not(:disabled),
   [role="button"]:not(:disabled) {
     cursor: pointer;
@@ -136,35 +137,52 @@
 }
 
 @layer utilities {
+  .touch-hitbox {
+    position: relative;
+
+    &::before {
+      content: "";
+      position: absolute;
+      display: block;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 100%;
+      height: 100%;
+      min-height: 44px;
+      min-width: 44px;
+      z-index: 9999;
+    }
+  }
   /* Animation utilities for dynamic content */
   .animate-fade-slide-up {
     animation: fade-slide-up 200ms var(--ease-out-quart);
   }
-  
+
   .animate-fade-slide-down {
     animation: fade-slide-down 200ms var(--ease-out-quart);
   }
-  
+
   .animate-fade-scale {
     animation: fade-scale 150ms var(--ease-out-cubic);
   }
-  
+
   .animate-fade-scale-out {
     animation: fade-scale-out 150ms var(--ease-out-cubic);
   }
-  
+
   .animate-fade-slide-left {
     animation: fade-slide-left 200ms var(--ease-out-quart);
   }
-  
+
   .animate-fade-slide-right {
     animation: fade-slide-right 200ms var(--ease-out-quart);
   }
-  
+
   .animate-green-fade {
     animation: green-fade 2.5s var(--ease-out-quart);
   }
-  
+
   @keyframes fade-slide-up {
     from {
       opacity: 0;
@@ -175,7 +193,7 @@
       transform: translateY(0);
     }
   }
-  
+
   @keyframes fade-slide-down {
     from {
       opacity: 1;
@@ -186,7 +204,7 @@
       transform: translateY(-4px);
     }
   }
-  
+
   @keyframes fade-scale {
     from {
       opacity: 0;
@@ -197,7 +215,7 @@
       transform: scale(1);
     }
   }
-  
+
   @keyframes fade-scale-out {
     from {
       opacity: 1;
@@ -208,7 +226,7 @@
       transform: scale(0.95);
     }
   }
-  
+
   @keyframes fade-slide-left {
     from {
       opacity: 0;
@@ -219,7 +237,7 @@
       transform: translateX(0);
     }
   }
-  
+
   @keyframes fade-slide-right {
     from {
       opacity: 1;
@@ -230,7 +248,7 @@
       transform: translateX(4px);
     }
   }
-  
+
   @keyframes green-fade {
     from {
       color: oklch(0.5 0.2 145);
@@ -239,11 +257,11 @@
       color: var(--color-muted-foreground);
     }
   }
-  
+
   .dark .animate-green-fade {
     animation: green-fade-dark 2.5s var(--ease-out-quart);
   }
-  
+
   @keyframes green-fade-dark {
     from {
       color: oklch(0.65 0.15 145);

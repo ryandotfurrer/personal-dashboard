@@ -19,7 +19,7 @@ export function ModeToggle() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
-        className={cn(buttonVariants({ variant: "ghost", size: "icon" }), "relative text-muted-foreground")}
+        className={cn(buttonVariants({ variant: "ghost", size: "icon" }), "relative text-muted-foreground pointer-coarse:touch-hitbox")}
       >
         <Sun className="size-4 scale-100 rotate-0 transition-all dark:scale-0 dark:-rotate-90" />
         <Moon className="absolute size-4 scale-0 rotate-90 transition-all dark:scale-100 dark:rotate-0" />
