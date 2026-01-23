@@ -25,15 +25,6 @@ const items = [
   },
 ]
 
-const footerItems = [
-  {
-    title: "Log out",
-    url: "/account",
-    icon: LogOut,
-    disabled: true,
-    tooltip: "Coming soon",
-  },
-]
 
 const comingSoonItems = [
   {
@@ -73,8 +64,15 @@ const comingSoonItems = [
   },
 
 ]
-
-
+const footerItems = [
+  {
+    title: "Log out",
+    url: "/account",
+    icon: LogOut,
+    disabled: true,
+    tooltip: "Coming soon",
+  },
+]
 
 export function NavSidebar() {
   return (

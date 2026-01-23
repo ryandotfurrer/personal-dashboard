@@ -9,7 +9,7 @@ import { Home } from "lucide-react";
 export default function Page() {
     return (
         <div className="w-full bg-background rounded-lg">
-            <header className=" py-4 text-sm border-b px-2">
+            <header className=" py-2 text-sm border-b px-2">
                 <div className="flex items-center gap-4">
                     <div className="flex items-center gap-2">
                         <Tooltip>
