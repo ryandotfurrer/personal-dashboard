@@ -423,9 +423,11 @@ export const updateSocialMetrics = mutation({
       .first();
 
     if (existing) {
-      // Update existing record
+      // Update existing record, preserving current counts as previous
       await ctx.db.patch(existing._id, {
         platform: normalizedPlatform, // Normalize with proper capitalization
+        previous_follower_count: existing.follower_count,
+        previous_subscriber_count: existing.subscriber_count,
         follower_count: args.follower_count,
         subscriber_count: args.subscriber_count,
         profile_url: args.profile_url ?? existing.profile_url,

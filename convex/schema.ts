@@ -82,6 +82,8 @@ export default defineSchema({
     url: v.string(),
     // New optional fields:
     subscriber_count: v.optional(v.float64()), // Paid tier metric (Twitch only)
+    previous_follower_count: v.optional(v.float64()),
+    previous_subscriber_count: v.optional(v.float64()),
     profile_url: v.optional(v.string()), // Explicit profile URL
     last_updated: v.optional(v.number()), // Unix timestamp
   }).index("by_platform", ["platform"]),

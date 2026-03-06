@@ -239,6 +239,8 @@ export default function SocialPlatformCardSection() {
             _id,
             follower_count,
             subscriber_count,
+            previous_follower_count,
+            previous_subscriber_count,
             platform,
             url,
             profile_url,
@@ -255,6 +257,8 @@ export default function SocialPlatformCardSection() {
                 platform={platform}
                 follower_count={follower_count}
                 subscriber_count={subscriber_count}
+                previous_follower_count={previous_follower_count}
+                previous_subscriber_count={previous_subscriber_count}
                 url={url}
                 profile_url={profile_url}
                 last_updated={last_updated}
