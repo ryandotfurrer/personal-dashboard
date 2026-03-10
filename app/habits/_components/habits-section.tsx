@@ -6,8 +6,17 @@ import type { Id } from "@/convex/_generated/dataModel";
 import { api } from "@/convex/_generated/api";
 import SectionHeader from "@/components/section-header";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 // @ts-expect-error - Direct import for performance
 import Plus from "lucide-react/dist/esm/icons/plus";
 import { HabitCard } from "./habit-card";
@@ -58,6 +67,10 @@ export default function HabitsSection({ mode = "active" }: { mode?: HabitsMode }
   const [habitStatuses, setHabitStatuses] = useState<Map<string, HabitStatusResult>>(
     new Map(),
   );
+  const [confirmDialog, setConfirmDialog] = useState<{
+    type: "archive" | "delete";
+    habit: HabitWithStats;
+  } | null>(null);
   const headerStatusTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const habitStatusTimeoutsRef = useRef<Map<string, NodeJS.Timeout>>(new Map());
 
@@ -226,27 +239,9 @@ export default function HabitsSection({ mode = "active" }: { mode?: HabitsMode }
     [uncompleteHabit, setTransientHabitStatus],
   );
 
-  const handleArchiveHabit = useCallback(
-    async (habit: HabitWithStats) => {
-      if (!window.confirm(`Archive "${habit.name}"?`)) return;
-      setPendingHabitActionId(habit._id);
-      try {
-        await archiveHabit({ habitId: habit._id });
-        setTransientHabitStatus(habit._id, {
-          success: true,
-          message: "Habit archived",
-        });
-      } catch (error) {
-        setTransientHabitStatus(habit._id, {
-          success: false,
-          message: error instanceof Error ? error.message : String(error),
-        });
-      } finally {
-        setPendingHabitActionId(null);
-      }
-    },
-    [archiveHabit, setTransientHabitStatus],
-  );
+  const handleArchiveHabit = useCallback((habit: HabitWithStats) => {
+    setConfirmDialog({ type: "archive", habit });
+  }, []);
 
   const handleRestoreHabit = useCallback(
     async (habit: HabitWithStats) => {
@@ -269,134 +264,164 @@ export default function HabitsSection({ mode = "active" }: { mode?: HabitsMode }
     [restoreHabit, setTransientHabitStatus],
   );
 
-  const handleDeleteHabit = useCallback(
-    async (habit: HabitWithStats) => {
-      if (!window.confirm(`Delete "${habit.name}"? It will no longer appear in the app.`)) {
-        return;
-      }
-      setPendingHabitActionId(habit._id);
-      try {
+  const handleDeleteHabit = useCallback((habit: HabitWithStats) => {
+    setConfirmDialog({ type: "delete", habit });
+  }, []);
+
+  const handleConfirmAction = useCallback(async () => {
+    if (!confirmDialog) return;
+    const { type, habit } = confirmDialog;
+    setConfirmDialog(null);
+    setPendingHabitActionId(habit._id);
+    try {
+      if (type === "archive") {
+        await archiveHabit({ habitId: habit._id });
+        setTransientHabitStatus(habit._id, { success: true, message: "Habit archived" });
+      } else {
         await deleteHabit({ habitId: habit._id });
-        setTransientHabitStatus(habit._id, {
-          success: true,
-          message: "Habit deleted",
-        });
-      } catch (error) {
-        setTransientHabitStatus(habit._id, {
-          success: false,
-          message: error instanceof Error ? error.message : String(error),
-        });
-      } finally {
-        setPendingHabitActionId(null);
+        setTransientHabitStatus(habit._id, { success: true, message: "Habit deleted" });
       }
-    },
-    [deleteHabit, setTransientHabitStatus],
-  );
+    } catch (error) {
+      setTransientHabitStatus(habit._id, {
+        success: false,
+        message: error instanceof Error ? error.message : String(error),
+      });
+    } finally {
+      setPendingHabitActionId(null);
+    }
+  }, [confirmDialog, archiveHabit, deleteHabit, setTransientHabitStatus]);
 
   const sectionTitle = mode === "active" ? "Habits" : "Archived Habits";
   const isLoading = habits === undefined;
 
   return (
-    <section className="flex flex-col gap-6">
-      <SectionHeader
-        title={sectionTitle}
-        id={mode === "active" ? "habits" : "archived-habits"}
-        action={
-          <div className="flex items-center gap-2">
-            {headerStatus && (
-              <p
-                className={`text-xs ${
-                  headerStatus.success ? "text-muted-foreground" : "text-destructive"
-                }`}
-              >
-                {headerStatus.message}
-              </p>
-            )}
-            {mode === "active" && (
-              <Button onClick={openCreateSheet} size="sm" data-icon="inline-start">
-                <Plus className="size-[1.2em]" />
-                New Habit
-              </Button>
-            )}
-          </div>
-        }
-      />
-
-      {isLoading ? (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {Array.from({ length: 4 }).map((_, index) => (
-            <div
-              key={`habit-skeleton-${index}`}
-              className="relative flex flex-col overflow-hidden rounded-xl bg-card ring-1 ring-foreground/10 shadow-xs"
-            >
-              <div className="absolute inset-x-0 top-0 h-px bg-muted" />
-              <div className="flex flex-col gap-3 p-4 pt-[18px]">
-                <div className="flex items-start justify-between gap-2">
-                  <div className="flex min-w-0 flex-1 flex-col gap-1">
-                    <Skeleton className="h-4 w-28" />
-                    <Skeleton className="h-3 w-20" />
-                  </div>
-                  <Skeleton className="size-5 shrink-0 rounded" />
-                </div>
-                <div className="flex items-baseline gap-1">
-                  <Skeleton className="h-7 w-8" />
-                  <Skeleton className="h-4 w-6" />
-                </div>
-                <Skeleton className="h-1.5 w-full rounded-full" />
-                <div className="flex gap-1.5">
-                  <Skeleton className="h-4 w-16 rounded-full" />
-                  <Skeleton className="h-4 w-14 rounded-full" />
-                </div>
-                <Skeleton className="h-8 w-full rounded-md" />
-              </div>
+    <>
+      <section className="flex flex-col gap-6">
+        <SectionHeader
+          title={sectionTitle}
+          id={mode === "active" ? "habits" : "archived-habits"}
+          action={
+            <div className="flex items-center gap-2">
+              {headerStatus && (
+                <p
+                  className={`text-xs ${
+                    headerStatus.success ? "text-muted-foreground" : "text-destructive"
+                  }`}
+                >
+                  {headerStatus.message}
+                </p>
+              )}
+              {mode === "active" && (
+                <Button onClick={openCreateSheet} size="sm" data-icon="inline-start">
+                  <Plus className="size-[1.2em]" />
+                  New Habit
+                </Button>
+              )}
             </div>
-          ))}
-        </div>
-      ) : sortedHabits.length === 0 ? (
-        <Card>
-          <CardContent>
+          }
+        />
+
+        {isLoading ? (
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {Array.from({ length: 4 }).map((_, index) => (
+              <div
+                key={`habit-skeleton-${index}`}
+                className="relative flex flex-col overflow-hidden rounded-xl bg-card ring-1 ring-foreground/10 shadow-xs"
+              >
+                <div className="absolute inset-x-0 top-0 h-px bg-muted" />
+                <div className="flex flex-col gap-3 p-4 pt-[18px]">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex min-w-0 flex-1 flex-col gap-1">
+                      <Skeleton className="h-4 w-28" />
+                      <Skeleton className="h-3 w-20" />
+                    </div>
+                    <Skeleton className="size-5 shrink-0 rounded" />
+                  </div>
+                  <div className="flex items-baseline gap-1">
+                    <Skeleton className="h-7 w-8" />
+                    <Skeleton className="h-4 w-6" />
+                  </div>
+                  <Skeleton className="h-1.5 w-full rounded-full" />
+                  <div className="flex gap-1.5">
+                    <Skeleton className="h-4 w-16 rounded-full" />
+                    <Skeleton className="h-4 w-14 rounded-full" />
+                  </div>
+                  <Skeleton className="h-8 w-full rounded-md" />
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : sortedHabits.length === 0 ? (
+          <div className="rounded-xl bg-card ring-1 ring-foreground/10 shadow-xs px-4 py-6">
             <p className="text-sm text-muted-foreground">
               {mode === "active"
                 ? "No habits yet. Create your first habit to start tracking."
                 : "No archived habits."}
             </p>
-          </CardContent>
-        </Card>
-      ) : (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {sortedHabits.map((habit) => (
-            <HabitCard
-              key={habit._id}
-              habit={habit}
-              mode={mode}
-              status={habitStatuses.get(habit._id)}
-              pendingActionId={pendingHabitActionId}
-              onEdit={openEditSheet}
-              onComplete={handleCompleteHabit}
-              onUncomplete={handleUncompleteHabit}
-              onArchive={handleArchiveHabit}
-              onRestore={handleRestoreHabit}
-              onDelete={handleDeleteHabit}
-            />
-          ))}
-        </div>
-      )}
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {sortedHabits.map((habit) => (
+              <HabitCard
+                key={habit._id}
+                habit={habit}
+                mode={mode}
+                status={habitStatuses.get(habit._id)}
+                pendingActionId={pendingHabitActionId}
+                onEdit={openEditSheet}
+                onComplete={handleCompleteHabit}
+                onUncomplete={handleUncompleteHabit}
+                onArchive={handleArchiveHabit}
+                onRestore={handleRestoreHabit}
+                onDelete={handleDeleteHabit}
+              />
+            ))}
+          </div>
+        )}
 
-      {mode === "active" && (
-        <HabitFormSheet
-          open={sheetOpen}
-          onOpenChange={handleSheetOpenChange}
-          editingHabitId={editingHabitId}
-          form={form}
-          setForm={setForm}
-          formError={formError}
-          categories={categories}
-          submitting={submittingForm}
-          createMore={createMore}
-          onCreateMoreChange={handleCreateMoreChange}
-          onSubmit={handleSubmitForm}
-        />
-      )}
-    </section>
+        {mode === "active" && (
+          <HabitFormSheet
+            open={sheetOpen}
+            onOpenChange={handleSheetOpenChange}
+            editingHabitId={editingHabitId}
+            form={form}
+            setForm={setForm}
+            formError={formError}
+            categories={categories}
+            submitting={submittingForm}
+            createMore={createMore}
+            onCreateMoreChange={handleCreateMoreChange}
+            onSubmit={handleSubmitForm}
+          />
+        )}
+      </section>
+
+      <AlertDialog
+        open={confirmDialog !== null}
+        onOpenChange={(open) => { if (!open) setConfirmDialog(null); }}
+      >
+        <AlertDialogContent size="sm">
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {confirmDialog?.type === "archive" ? "Archive habit?" : "Delete habit?"}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {confirmDialog?.type === "archive"
+                ? `"${confirmDialog.habit.name}" will be moved to the archive. You can restore it later.`
+                : `"${confirmDialog?.habit.name}" will be permanently deleted and cannot be recovered.`}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              variant={confirmDialog?.type === "delete" ? "destructive" : "default"}
+              onClick={handleConfirmAction}
+            >
+              {confirmDialog?.type === "archive" ? "Archive" : "Delete"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 }

@@ -15,7 +15,20 @@ import {
   SidebarMenuSubItem,
   useSidebar,
 } from "@/components/ui/sidebar"
-import { CalendarCheck, Home, ListTodo, LogOut, MessageCircle, NotebookText, NotepadText } from "lucide-react"
+// @ts-expect-error - Direct import for performance
+import CalendarCheck from "lucide-react/dist/esm/icons/calendar-check"
+// @ts-expect-error - Direct import for performance
+import Home from "lucide-react/dist/esm/icons/home"
+// @ts-expect-error - Direct import for performance
+import ListTodo from "lucide-react/dist/esm/icons/list-todo"
+// @ts-expect-error - Direct import for performance
+import LogOut from "lucide-react/dist/esm/icons/log-out"
+// @ts-expect-error - Direct import for performance
+import MessageCircle from "lucide-react/dist/esm/icons/message-circle"
+// @ts-expect-error - Direct import for performance
+import NotebookText from "lucide-react/dist/esm/icons/notebook-text"
+// @ts-expect-error - Direct import for performance
+import NotepadText from "lucide-react/dist/esm/icons/notepad-text"
 import { ModeToggle } from "./mode-toggle"
 import { usePathname } from "next/navigation";
 import Link from "next/link";
@@ -87,7 +100,7 @@ export function NavSidebar() {
         <SidebarHeader className="h-13 flex-row items-center justify-center px-0">
           <span className="flex items-center gap-2 group-data-[collapsible=icon]:hidden">
             <Image src="/icon.svg" alt="me icon" width={24} height={24} className="size-6" />
-            <span className="font-black text-foreground text-3xl/none">me.</span>
+            <span className="font-display font-extrabold text-primary text-3xl/none tracking-tight">me.</span>
           </span>
           <Image
             src="/icon.svg"
@@ -139,28 +152,6 @@ export function NavSidebar() {
                   )}
                 </SidebarMenuItem>
               ))}
-              {/* {comingSoonItems.map((item) => (
-                <Tooltip key={item.title} aria-label={`${item.title} is ${item.tooltip}`}>
-                  <TooltipTrigger>
-                    <SidebarMenuItem>
-                      <SidebarMenuButton render={
-                        <Link
-                          href={item.url}
-                          aria-disabled={item.disabled}
-                          className={item.disabled ? "cursor-not-allowed" : undefined}
-                          onClick={handleNavClick(item.disabled)}
-                        >
-                          <item.icon className="size-4" />
-                          <span>{item.title}</span>
-                        </Link>
-                      } />
-                    </SidebarMenuItem>
-                  </TooltipTrigger>
-                  <TooltipContent side="right">
-                    {item.tooltip}
-                  </TooltipContent>
-                </Tooltip>
-              ))} */}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
@@ -186,7 +177,7 @@ export function NavSidebar() {
                     onClick={handleNavClick(item.disabled)}
                     className="flex w-full items-center gap-2 group-data-[collapsible=icon]:justify-center"
                   >
-                    <item.icon />
+                    <item.icon className="size-4" />
                     <span className="group-data-[collapsible=icon]:hidden">
                       {item.title}
                     </span>

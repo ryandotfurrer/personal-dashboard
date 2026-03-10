@@ -76,10 +76,10 @@ function SparklineTooltip({
     <div className="rounded-lg border border-border/60 bg-popover/90 px-2.5 py-1.5 text-[10px] shadow-lg backdrop-blur-sm space-y-0.5">
       {dual
         ? payload.map((p) => (
-            <p key={p.name} className="font-semibold tabular-nums" style={{ color: p.color }}>
-              {p.name}: {p.value.toLocaleString()}
-            </p>
-          ))
+          <p key={p.name} className="font-semibold tabular-nums" style={{ color: p.color }}>
+            {p.name}: {p.value.toLocaleString()}
+          </p>
+        ))
         : <p className="font-semibold tabular-nums">{payload[0].value.toLocaleString()}</p>}
       <p className="text-muted-foreground">{date}</p>
     </div>
@@ -205,15 +205,10 @@ export function SocialPlatformCard({
   const previousSubscriberCount = subscriber_history?.[subscriber_history.length - 1]?.count;
 
   return (
-    <div className="group relative flex flex-col overflow-hidden rounded-xl bg-card text-card-foreground ring-1 ring-foreground/10 shadow-xs min-h-[148px]">
+    <div
+      className="group hover-glow relative flex flex-col overflow-hidden rounded-xl bg-card text-card-foreground ring-1 ring-foreground/10 shadow-xs min-h-[148px]"
+    >
 
-      {/* Platform color top accent bar */}
-      {accentColor && (
-        <div
-          className="absolute inset-x-0 top-0 h-px"
-          style={{ backgroundColor: accentColor }}
-        />
-      )}
 
       {/* Full-bleed background chart */}
       {hasChart && (
@@ -244,7 +239,7 @@ export function SocialPlatformCard({
 
         {/* Header */}
         <div className="flex items-start justify-between gap-2">
-          <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+          <span className="font-display text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
             {displayUrl ? (
               <a
                 href={displayUrl}

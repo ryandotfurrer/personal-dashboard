@@ -2,12 +2,10 @@ import { NavSidebar } from "@/components/nav-sidebar";
 import { ThemeProvider } from "@/components/theme-provider";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Inter } from "next/font/google";
+import { Bricolage_Grotesque, Geist, Geist_Mono } from "next/font/google";
 import { cookies } from "next/headers";
 import { ConvexClientProvider } from "./ConvexClientProvider";
 import "./globals.css";
-
-const inter = Inter({ subsets: ['latin'], variable: '--font-sans' });
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -17,6 +15,12 @@ const geistSans = Geist({
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
+});
+
+const bricolageGrotesque = Bricolage_Grotesque({
+  variable: "--font-display",
+  subsets: ["latin"],
+  weight: ["700", "800"],
 });
 
 export const metadata: Metadata = {
@@ -37,10 +41,8 @@ export default async function RootLayout({
   const defaultSidebarOpen = sidebarCookie ? sidebarCookie === "true" : true;
 
   return (
-    <html lang="en" className={inter.variable} suppressHydrationWarning>
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-sidebar`}
-      >
+    <html lang="en" className={`${geistSans.variable} ${geistMono.variable} ${bricolageGrotesque.variable}`} suppressHydrationWarning>
+      <body className="antialiased bg-sidebar">
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
@@ -50,7 +52,7 @@ export default async function RootLayout({
           <ConvexClientProvider>
             <SidebarProvider className="p-2" defaultOpen={defaultSidebarOpen}>
               <NavSidebar />
-              <div className="w-full bg-background rounded-lg">
+              <div className="content-bloom relative w-full overflow-hidden rounded-lg bg-background">
                 {children}
               </div>
             </SidebarProvider>

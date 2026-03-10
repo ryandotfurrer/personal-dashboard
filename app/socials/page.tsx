@@ -1,6 +1,8 @@
 import PageHeader from "@/components/page-header";
 import SocialPlatformCardSection from "./_components/social-platform-card-section";
-import { MessageCircle } from "lucide-react";
+// @ts-expect-error - Direct import for performance
+import MessageCircle from "lucide-react/dist/esm/icons/message-circle";
+import PageWithNotesLayout from "@/components/page-with-notes-layout";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -11,10 +13,9 @@ export default function SocialsPage() {
     return (
         <>
             <PageHeader icon={MessageCircle} title="Socials" />
-            <main className="p-4 lg:p-6">
+            <PageWithNotesLayout>
                 <SocialPlatformCardSection />
-                <p>Add graphs, quick timeline picker, a date picker, and a way to filter by platform.</p>
-            </main>
+            </PageWithNotesLayout>
         </>
     );
 }

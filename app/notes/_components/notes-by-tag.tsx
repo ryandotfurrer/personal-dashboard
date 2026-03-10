@@ -3,7 +3,6 @@
 import { useMemo } from "react";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
-import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { groupNotesByTag, NoteItem, stripTagTokens } from "../_lib/note-helpers";
 
@@ -51,25 +50,17 @@ export default function NotesByTag() {
 
   if (notes.length === 0) {
     return (
-      <Card>
-        <CardContent>
-          <p className="text-sm text-muted-foreground">
-            No notes yet. Add one from the Home page notes textarea.
-          </p>
-        </CardContent>
-      </Card>
+      <div className="rounded-xl bg-card ring-1 ring-foreground/10 shadow-xs px-4 py-6">
+        <p className="text-sm text-muted-foreground">No notes yet. Add one from the Home page notes textarea.</p>
+      </div>
     );
   }
 
   if (grouped.length === 0) {
     return (
-      <Card>
-        <CardContent>
-          <p className="text-sm text-muted-foreground">
-            No tagged notes yet. Add a note with a #tag from the Home page.
-          </p>
-        </CardContent>
-      </Card>
+      <div className="rounded-xl bg-card ring-1 ring-foreground/10 shadow-xs px-4 py-6">
+        <p className="text-sm text-muted-foreground">No tagged notes yet. Add a note with a #tag from the Home page.</p>
+      </div>
     );
   }
 
@@ -78,11 +69,11 @@ export default function NotesByTag() {
       {grouped.map((group) => (
         <article
           key={group.tag}
-          className="flex flex-col overflow-hidden rounded-xl bg-card ring-1 ring-foreground/10 shadow-xs"
+          className="hover-glow flex flex-col overflow-hidden rounded-xl bg-card ring-1 ring-foreground/10 shadow-xs"
         >
           {/* Tag header */}
           <div className="flex items-baseline justify-between gap-2 border-b border-border/60 px-4 py-3">
-            <h2 className="truncate text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+            <h2 className="truncate font-display text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
               <span className="text-sky-500 dark:text-sky-400">#</span>
               {group.tag}
             </h2>

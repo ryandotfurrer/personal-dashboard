@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import type { Id } from "@/convex/_generated/dataModel";
 import { Button } from "@/components/ui/button";
 import {
@@ -35,9 +36,10 @@ function getDueDateStatus(dueDate: string): DueDateStatus {
 function formatDueDate(dueDate: string, status: DueDateStatus): string {
   const due = new Date(`${dueDate}T00:00:00`);
   const formatted = due.toLocaleDateString(undefined, { month: "short", day: "numeric" });
-  if (status === "today") return "Due today";
-  if (status === "overdue") return `Overdue · ${formatted}`;
-  return `Due ${formatted}`;
+  if (status === "today") return "Today";
+  if (status === "overdue") return `Overdue`;
+  if (status === "soon") return formatted;
+  return formatted;
 }
 
 type TaskCardProps = {
@@ -57,8 +59,10 @@ export function TaskCard({
   onEdit,
   onDelete,
 }: TaskCardProps) {
+  const [notesExpanded, setNotesExpanded] = useState(false);
   const actionDisabled = pendingActionId === task._id;
   const dueDateStatus = task.due_date ? getDueDateStatus(task.due_date) : null;
+  const isOverdue = dueDateStatus === "overdue" && !task.is_completed;
 
   const accentClass = task.is_completed
     ? "bg-emerald-500/60"
@@ -69,32 +73,37 @@ export function TaskCard({
     : "bg-foreground/10";
 
   return (
-    <article className="group relative flex flex-col overflow-hidden rounded-xl bg-card text-card-foreground ring-1 ring-foreground/10 shadow-xs transition-[box-shadow] duration-150 ease hover:shadow-sm">
+    <article className={cn(
+      "group hover-glow relative overflow-hidden rounded-xl bg-card text-card-foreground ring-1 ring-foreground/10 shadow-xs",
+      "transition-opacity duration-300 ease-out motion-reduce:transition-none",
+      isOverdue && "bg-rose-500/[0.03] dark:bg-rose-500/[0.05]",
+      task.is_completed && "opacity-60 hover:opacity-100",
+    )}>
       {/* Left urgency accent */}
       <div
         className={cn(
-          "absolute bottom-3 left-0 top-3 w-[3px] rounded-r-full transition-[background-color] duration-200 ease-out motion-reduce:transition-none",
+          "absolute left-0 top-2.5 bottom-2.5 w-[3px] rounded-r-full transition-[background-color] duration-200 ease-out motion-reduce:transition-none",
           accentClass,
         )}
       />
 
-      <div className="flex flex-1 flex-col gap-3 p-4">
-        {/* Title row: checkbox + title + menu */}
-        <div className="flex items-start gap-2.5">
+      <div className="flex flex-col gap-1 px-4 py-3">
+        {/* Main row: checkbox + title + chip + menu */}
+        <div className="flex items-center gap-2.5">
           {/* Toggle checkbox */}
           <button
             onClick={() => onToggleComplete?.(task)}
             disabled={actionDisabled}
             aria-label={task.is_completed ? "Mark as incomplete" : "Mark as complete"}
             className={cn(
-              "mt-px size-[18px] shrink-0 rounded-full border-2 flex items-center justify-center",
+              "shrink-0 size-[18px] rounded-full border-2 flex items-center justify-center",
               "touch-manipulation select-none",
-              "transition-[background-color,border-color] duration-150 ease motion-reduce:transition-none",
+              "transition-[background-color,border-color,transform] duration-150 ease motion-reduce:transition-none",
               "active:scale-[0.88] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1",
               "disabled:pointer-events-none disabled:opacity-40",
               task.is_completed
                 ? "bg-emerald-500 border-emerald-500"
-                : "border-foreground/25 bg-transparent hover:border-foreground/50",
+                : "border-foreground/25 bg-transparent hover:border-primary/60",
             )}
           >
             {task.is_completed ? (
@@ -102,9 +111,11 @@ export function TaskCard({
             ) : null}
           </button>
 
+          {/* Title */}
           <span
+            title={task.title}
             className={cn(
-              "flex-1 min-w-0 text-sm font-medium leading-snug",
+              "flex-1 min-w-0 truncate font-display text-sm font-bold leading-snug",
               "transition-[color,opacity,text-decoration-color] duration-200 ease-out motion-reduce:transition-none",
               task.is_completed
                 ? "text-muted-foreground/50 line-through decoration-muted-foreground/30"
@@ -114,7 +125,26 @@ export function TaskCard({
             {task.title}
           </span>
 
-          {/* Actions — visible on hover/focus */}
+          {/* Inline status chip */}
+          {task.is_completed ? (
+            <span className="shrink-0 inline-flex items-center rounded-full bg-emerald-500/10 px-2 py-0.5 text-[10px] font-medium text-emerald-600 dark:text-emerald-400 tabular-nums">
+              Done · {new Date(task.updated_at).toLocaleDateString(undefined, { month: "short", day: "numeric" })}
+            </span>
+          ) : task.due_date && dueDateStatus ? (
+            <span
+              className={cn(
+                "shrink-0 inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium tabular-nums",
+                dueDateStatus === "overdue" && "bg-rose-500/10 text-rose-600 dark:text-rose-400",
+                dueDateStatus === "today" && "bg-amber-500/10 text-amber-600 dark:text-amber-400",
+                dueDateStatus === "soon" && "bg-amber-500/8 text-amber-500/80 dark:text-amber-400/70",
+                dueDateStatus === "future" && "bg-muted text-muted-foreground",
+              )}
+            >
+              {formatDueDate(task.due_date, dueDateStatus)}
+            </span>
+          ) : null}
+
+          {/* Actions menu */}
           <DropdownMenu>
             <DropdownMenuTrigger
               render={
@@ -146,41 +176,36 @@ export function TaskCard({
           </DropdownMenu>
         </div>
 
-        {/* Notes */}
+        {/* Notes — secondary line, click to expand */}
         {task.notes ? (
-          <p className="line-clamp-2 text-xs leading-relaxed text-muted-foreground pl-[26px]">
+          <p
+            onClick={() => setNotesExpanded((v) => !v)}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => e.key === "Enter" && setNotesExpanded((v) => !v)}
+            aria-expanded={notesExpanded}
+            className={cn(
+              "cursor-pointer pl-[26px] text-xs leading-relaxed text-muted-foreground/70",
+              "transition-colors duration-150 hover:text-muted-foreground",
+              "focus-visible:outline-none focus-visible:underline",
+              notesExpanded ? "whitespace-pre-wrap" : "truncate",
+            )}
+          >
             {task.notes}
           </p>
         ) : null}
 
-        {/* Due date chip + transient status */}
-        <div className="flex items-center gap-2 flex-wrap pl-[26px]">
-          {task.due_date && dueDateStatus ? (
-            <span
-              className={cn(
-                "inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium tabular-nums",
-                dueDateStatus === "overdue" && "bg-rose-500/10 text-rose-600 dark:text-rose-400",
-                dueDateStatus === "today" && "bg-amber-500/10 text-amber-600 dark:text-amber-400",
-                dueDateStatus === "soon" && "bg-amber-500/8 text-amber-500/80 dark:text-amber-400/70",
-                dueDateStatus === "future" && "bg-muted text-muted-foreground",
-              )}
-            >
-              {formatDueDate(task.due_date, dueDateStatus)}
-            </span>
-          ) : null}
-
-          {/* aria-live region always in DOM so screen readers catch updates */}
-          <p
-            aria-live="polite"
-            className={cn(
-              "text-[10px]",
-              status ? "animate-fade-scale" : "sr-only",
-              status?.success ? "text-muted-foreground" : "text-destructive",
-            )}
-          >
-            {status?.message ?? ""}
-          </p>
-        </div>
+        {/* aria-live status region always in DOM */}
+        <p
+          aria-live="polite"
+          className={cn(
+            "pl-[26px] text-[10px]",
+            status ? "animate-fade-scale" : "sr-only",
+            status?.success ? "text-muted-foreground" : "text-destructive",
+          )}
+        >
+          {status?.message ?? ""}
+        </p>
       </div>
     </article>
   );

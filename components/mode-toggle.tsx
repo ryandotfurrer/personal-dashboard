@@ -1,41 +1,55 @@
 "use client"
 
 import * as React from "react"
-import { Moon, Sun } from "lucide-react"
 import { useTheme } from "next-themes"
+import { Button } from "@/components/ui/button"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
+// @ts-expect-error - Direct import for performance
+import Moon from "lucide-react/dist/esm/icons/moon"
+// @ts-expect-error - Direct import for performance
+import Sun from "lucide-react/dist/esm/icons/sun"
+// @ts-expect-error - Direct import for performance
+import Monitor from "lucide-react/dist/esm/icons/monitor"
 
-import { buttonVariants } from "@/components/ui/button"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { cn } from "@/lib/utils"
+type Theme = "light" | "dark" | "system"
+
+const CYCLE: Theme[] = ["light", "dark", "system"]
+const LABELS: Record<Theme, string> = { light: "Light", dark: "Dark", system: "System" }
+
+function nextTheme(current: string | undefined): Theme {
+  const idx = CYCLE.indexOf(current as Theme)
+  return CYCLE[(idx + 1) % CYCLE.length]
+}
 
 export function ModeToggle() {
-  const { setTheme } = useTheme()
+  const { theme, setTheme } = useTheme()
+  const current = (theme ?? "system") as Theme
+  const next = nextTheme(current)
 
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger
-        className={cn(buttonVariants({ variant: "ghost", size: "icon" }), "relative text-muted-foreground pointer-coarse:touch-hitbox")}
+    <Tooltip>
+      <TooltipTrigger
+        render={
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setTheme(next)}
+            aria-label={`Switch to ${LABELS[next]} mode`}
+            className="relative text-muted-foreground pointer-coarse:touch-hitbox"
+          />
+        }
       >
-        <Sun className="size-4 scale-100 rotate-0 transition-all dark:scale-0 dark:-rotate-90" />
-        <Moon className="absolute size-4 scale-0 rotate-90 transition-all dark:scale-100 dark:rotate-0" />
-        <span className="sr-only">Toggle theme</span>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-        <DropdownMenuItem onClick={() => setTheme("light")}>
-          Light
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setTheme("dark")}>
-          Dark
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setTheme("system")}>
-          System
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+        {current === "light" ? (
+          <Sun className="size-4" aria-hidden="true" />
+        ) : current === "dark" ? (
+          <Moon className="size-4" aria-hidden="true" />
+        ) : (
+          <Monitor className="size-4" aria-hidden="true" />
+        )}
+      </TooltipTrigger>
+      <TooltipContent>
+        Switch to {LABELS[next]}
+      </TooltipContent>
+    </Tooltip>
   )
 }

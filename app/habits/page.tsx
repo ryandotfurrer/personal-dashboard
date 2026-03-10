@@ -1,6 +1,8 @@
 import HabitsSection from "./_components/habits-section";
 import PageHeader from "@/components/page-header";
-import { CalendarCheck } from "lucide-react";
+// @ts-expect-error - Direct import for performance
+import CalendarCheck from "lucide-react/dist/esm/icons/calendar-check";
+import PageWithNotesLayout from "@/components/page-with-notes-layout";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -11,9 +13,9 @@ export default function HabitsPage() {
   return (
     <>
       <PageHeader icon={CalendarCheck} title="Habits" />
-      <main className="p-4 lg:p-6">
+      <PageWithNotesLayout>
         <HabitsSection mode="active" />
-      </main>
+      </PageWithNotesLayout>
     </>
   );
 }

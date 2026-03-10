@@ -47,9 +47,14 @@ export function TaskFormSheet({
   const isCreateMode = editingTaskId === null;
   const titleInputRef = React.useRef<HTMLInputElement>(null);
 
-  const submitWithMode = React.useCallback(async () => {
-    await onSubmit();
-  }, [onSubmit]);
+  // Auto-focus the title input when the sheet opens
+  React.useEffect(() => {
+    if (!open) return;
+    const timer = setTimeout(() => {
+      titleInputRef.current?.focus();
+    }, 80);
+    return () => clearTimeout(timer);
+  }, [open]);
 
   const handleKeyDown = React.useCallback(
     async (event: React.KeyboardEvent) => {
@@ -57,14 +62,14 @@ export function TaskFormSheet({
         event.key === "Enter" && (event.metaKey || event.ctrlKey);
       if (!isSubmitShortcut || submitting) return;
       event.preventDefault();
-      await submitWithMode();
+      await onSubmit();
       if (isCreateMode && createMore) {
         requestAnimationFrame(() => {
           titleInputRef.current?.focus();
         });
       }
     },
-    [createMore, isCreateMode, submitWithMode, submitting],
+    [createMore, isCreateMode, onSubmit, submitting],
   );
 
   return (
@@ -82,9 +87,9 @@ export function TaskFormSheet({
         <div className="absolute inset-x-0 top-0 h-[2px] bg-primary" />
 
         <SheetHeader>
-          <SheetTitle>{editingTaskId ? "Edit Task" : "Create Task"}</SheetTitle>
+          <SheetTitle>{editingTaskId ? "Edit Task" : "New Task"}</SheetTitle>
           <SheetDescription>
-            Add task details and optional due date.
+            Give your task a clear title and set a due date to stay on track.
           </SheetDescription>
         </SheetHeader>
 
@@ -98,6 +103,7 @@ export function TaskFormSheet({
               ref={titleInputRef}
               name="task-title"
               autoComplete="off"
+              placeholder="e.g. Review project proposal…"
               value={form.title}
               onChange={(event) =>
                 setForm((prev) => ({ ...prev, title: event.target.value }))
@@ -113,6 +119,7 @@ export function TaskFormSheet({
               id="task-notes"
               name="task-notes"
               autoComplete="off"
+              placeholder="Additional context or steps…"
               value={form.notes}
               onChange={(event) =>
                 setForm((prev) => ({ ...prev, notes: event.target.value }))
@@ -157,8 +164,8 @@ export function TaskFormSheet({
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
-          <Button onClick={() => void submitWithMode()} disabled={submitting}>
-            {submitting ? "Saving..." : editingTaskId ? "Save Changes" : "Create Task"}
+          <Button onClick={() => void onSubmit()} disabled={submitting}>
+            {submitting ? "Saving…" : editingTaskId ? "Save Changes" : "Create Task"}
           </Button>
         </SheetFooter>
       </SheetContent>

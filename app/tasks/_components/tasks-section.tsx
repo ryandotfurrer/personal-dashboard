@@ -6,8 +6,17 @@ import type { Id } from "@/convex/_generated/dataModel";
 import { api } from "@/convex/_generated/api";
 import SectionHeader from "@/components/section-header";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 // @ts-expect-error - Direct import for performance
 import Plus from "lucide-react/dist/esm/icons/plus";
 import { TaskCard } from "./task-card";
@@ -43,6 +52,7 @@ export default function TasksSection() {
   const [taskStatuses, setTaskStatuses] = useState<Map<string, TaskStatusResult>>(
     new Map(),
   );
+  const [confirmDeleteTask, setConfirmDeleteTask] = useState<TaskItem | null>(null);
   const headerStatusTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const taskStatusTimeoutsRef = useRef<Map<string, NodeJS.Timeout>>(new Map());
 
@@ -195,112 +205,126 @@ export default function TasksSection() {
     [setTransientTaskStatus, toggleTaskComplete],
   );
 
-  const handleDeleteTask = useCallback(
-    async (task: TaskItem) => {
-      if (!window.confirm(`Delete "${task.title}"? It will no longer appear in the app.`)) {
-        return;
-      }
-      setPendingTaskActionId(task._id);
-      try {
-        await deleteTask({ taskId: task._id });
-        setTransientTaskStatus(task._id, {
-          success: true,
-          message: "Task deleted",
-        });
-      } catch (error) {
-        setTransientTaskStatus(task._id, {
-          success: false,
-          message: error instanceof Error ? error.message : String(error),
-        });
-      } finally {
-        setPendingTaskActionId(null);
-      }
-    },
-    [deleteTask, setTransientTaskStatus],
-  );
+  const handleDeleteTask = useCallback((task: TaskItem) => {
+    setConfirmDeleteTask(task);
+  }, []);
+
+  const handleConfirmDelete = useCallback(async () => {
+    if (!confirmDeleteTask) return;
+    const task = confirmDeleteTask;
+    setConfirmDeleteTask(null);
+    setPendingTaskActionId(task._id);
+    try {
+      await deleteTask({ taskId: task._id });
+      setTransientTaskStatus(task._id, {
+        success: true,
+        message: "Task deleted",
+      });
+    } catch (error) {
+      setTransientTaskStatus(task._id, {
+        success: false,
+        message: error instanceof Error ? error.message : String(error),
+      });
+    } finally {
+      setPendingTaskActionId(null);
+    }
+  }, [confirmDeleteTask, deleteTask, setTransientTaskStatus]);
 
   return (
-    <section className="flex flex-col gap-6">
-      <SectionHeader
-        title="Tasks"
-        id="tasks"
-        action={
-          <div className="flex items-center gap-2">
-            {headerStatus && (
-              <p
-                className={`text-xs ${
-                  headerStatus.success ? "text-muted-foreground" : "text-destructive"
-                }`}
-              >
-                {headerStatus.message}
-              </p>
-            )}
-            <Button onClick={openCreateSheet} size="sm" data-icon="inline-start">
-              <Plus className="size-[1.2em]" />
-              New Task
-            </Button>
-          </div>
-        }
-      />
-
-      {isLoading ? (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {Array.from({ length: 4 }).map((_, index) => (
-            <div
-              key={`task-skeleton-${index}`}
-              className="relative flex flex-col overflow-hidden rounded-xl bg-card ring-1 ring-foreground/10 shadow-xs p-4"
-            >
-              <div className="absolute bottom-3 left-0 top-3 w-[3px] rounded-r-full bg-muted" />
-              <div className="flex items-start gap-2.5">
-                <Skeleton className="mt-px size-[18px] shrink-0 rounded-full" />
-                <Skeleton className="h-4 flex-1" />
-                <Skeleton className="size-5 shrink-0 rounded" />
-              </div>
-              <div className="mt-3 pl-[26px]">
-                <Skeleton className="h-3 w-3/4" />
-              </div>
-              <div className="mt-2.5 pl-[26px]">
-                <Skeleton className="h-4 w-20 rounded-full" />
-              </div>
+    <>
+      <section className="@container flex flex-col gap-6">
+        <SectionHeader
+          title="Tasks"
+          id="tasks"
+          action={
+            <div className="flex items-center gap-2">
+              {headerStatus && (
+                <p
+                  className={`text-xs ${
+                    headerStatus.success ? "text-muted-foreground" : "text-destructive"
+                  }`}
+                >
+                  {headerStatus.message}
+                </p>
+              )}
+              <Button onClick={openCreateSheet} size="sm" data-icon="inline-start">
+                <Plus className="size-[1.2em]" />
+                New Task
+              </Button>
             </div>
-          ))}
-        </div>
-      ) : sortedTasks.length === 0 ? (
-        <Card>
-          <CardContent>
-            <p className="text-sm text-muted-foreground">
-              No tasks yet. Create your first task to get started.
-            </p>
-          </CardContent>
-        </Card>
-      ) : (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {sortedTasks.map((task) => (
-            <TaskCard
-              key={task._id}
-              task={task}
-              status={taskStatuses.get(task._id)}
-              pendingActionId={pendingTaskActionId}
-              onToggleComplete={handleToggleComplete}
-              onEdit={openEditSheet}
-              onDelete={handleDeleteTask}
-            />
-          ))}
-        </div>
-      )}
+          }
+        />
 
-      <TaskFormSheet
-        open={sheetOpen}
-        onOpenChange={handleSheetOpenChange}
-        editingTaskId={editingTaskId}
-        form={form}
-        setForm={setForm}
-        formError={formError}
-        submitting={submittingForm}
-        createMore={createMore}
-        onCreateMoreChange={handleCreateMoreChange}
-        onSubmit={handleSubmitForm}
-      />
-    </section>
+        {isLoading ? (
+          <div className="grid grid-cols-1 @3xl:grid-cols-2 gap-2">
+            {Array.from({ length: 4 }).map((_, index) => (
+              <div
+                key={`task-skeleton-${index}`}
+                className="relative overflow-hidden rounded-xl bg-card ring-1 ring-foreground/10 shadow-xs px-4 py-3"
+              >
+                <div className="absolute left-0 top-2.5 bottom-2.5 w-[3px] rounded-r-full bg-muted" />
+                <div className="flex items-center gap-2.5">
+                  <Skeleton className="size-[18px] shrink-0 rounded-full" />
+                  <Skeleton className="h-4 flex-1" />
+                  <Skeleton className="h-4 w-14 rounded-full shrink-0" />
+                  <Skeleton className="size-5 shrink-0 rounded" />
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : sortedTasks.length === 0 ? (
+          <div className="rounded-xl bg-card ring-1 ring-foreground/10 shadow-xs px-4 py-6">
+            <p className="text-sm text-muted-foreground">No tasks yet. Create your first task to get started.</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 @3xl:grid-cols-2 gap-2">
+            {sortedTasks.map((task) => (
+              <TaskCard
+                key={task._id}
+                task={task}
+                status={taskStatuses.get(task._id)}
+                pendingActionId={pendingTaskActionId}
+                onToggleComplete={handleToggleComplete}
+                onEdit={openEditSheet}
+                onDelete={handleDeleteTask}
+              />
+            ))}
+          </div>
+        )}
+
+        <TaskFormSheet
+          open={sheetOpen}
+          onOpenChange={handleSheetOpenChange}
+          editingTaskId={editingTaskId}
+          form={form}
+          setForm={setForm}
+          formError={formError}
+          submitting={submittingForm}
+          createMore={createMore}
+          onCreateMoreChange={handleCreateMoreChange}
+          onSubmit={handleSubmitForm}
+        />
+      </section>
+
+      <AlertDialog
+        open={confirmDeleteTask !== null}
+        onOpenChange={(open) => { if (!open) setConfirmDeleteTask(null); }}
+      >
+        <AlertDialogContent size="sm">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete task?</AlertDialogTitle>
+            <AlertDialogDescription>
+              "{confirmDeleteTask?.title}" will be permanently deleted and cannot be recovered.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction variant="destructive" onClick={handleConfirmDelete}>
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 }

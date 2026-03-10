@@ -1,5 +1,7 @@
 import PageHeader from "@/components/page-header";
-import { ListTodo } from "lucide-react";
+// @ts-expect-error - Direct import for performance
+import ListTodo from "lucide-react/dist/esm/icons/list-todo";
+import PageWithNotesLayout from "@/components/page-with-notes-layout";
 import type { Metadata } from "next";
 import TasksSection from "./_components/tasks-section";
 
@@ -11,9 +13,9 @@ export default function TasksPage() {
   return (
     <>
       <PageHeader icon={ListTodo} title="Tasks" />
-      <main className="p-4 lg:p-6">
+      <PageWithNotesLayout>
         <TasksSection />
-      </main>
+      </PageWithNotesLayout>
     </>
   );
 }

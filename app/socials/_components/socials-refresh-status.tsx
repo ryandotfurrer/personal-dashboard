@@ -94,7 +94,7 @@ export function SocialsRefreshStatus({
       // Success message
       return (
         <div className="flex items-center gap-1.5 text-xs text-muted-foreground animate-fade-scale">
-          <Check className="size-3 text-green-600 dark:text-green-500" />
+          <Check className="size-3 text-emerald-600 dark:text-emerald-400" />
           <span>Refreshed</span>
         </div>
       );
@@ -138,7 +138,9 @@ export function SocialsRefreshStatus({
                   onClick={handleCopyError}
                   variant="outline"
                 >
-                  {copied ? "Copied" : "Copy Error"}
+                  <span className={copied ? "animate-fade-scale" : undefined}>
+                {copied ? "Copied" : "Copy Error"}
+              </span>
                 </Button>
                 <AlertDialogCancel>Close</AlertDialogCancel>
                 <Button onClick={onRefresh} variant="default">

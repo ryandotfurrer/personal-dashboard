@@ -74,9 +74,14 @@ export function HabitFormSheet({
   const showCreateCategoryOption =
     form.categoryInput.trim().length > 0 && !matchingCategory;
 
-  const submitWithMode = React.useCallback(async () => {
-    await onSubmit();
-  }, [onSubmit]);
+  // Auto-focus the name input when the sheet opens
+  React.useEffect(() => {
+    if (!open) return;
+    const timer = setTimeout(() => {
+      titleInputRef.current?.focus();
+    }, 80);
+    return () => clearTimeout(timer);
+  }, [open]);
 
   const handleKeyDown = React.useCallback(
     async (event: React.KeyboardEvent) => {
@@ -84,14 +89,14 @@ export function HabitFormSheet({
         event.key === "Enter" && (event.metaKey || event.ctrlKey);
       if (!isSubmitShortcut || submitting) return;
       event.preventDefault();
-      await submitWithMode();
+      await onSubmit();
       if (isCreateMode && createMore) {
         requestAnimationFrame(() => {
           titleInputRef.current?.focus();
         });
       }
     },
-    [createMore, isCreateMode, submitWithMode, submitting],
+    [createMore, isCreateMode, onSubmit, submitting],
   );
 
   return (
@@ -109,9 +114,9 @@ export function HabitFormSheet({
         <div className="absolute inset-x-0 top-0 h-[2px] bg-emerald-500" />
 
         <SheetHeader>
-          <SheetTitle>{editingHabitId ? "Edit Habit" : "Create Habit"}</SheetTitle>
+          <SheetTitle>{editingHabitId ? "Edit Habit" : "New Habit"}</SheetTitle>
           <SheetDescription>
-            Configure the habit details and frequency.
+            Set your habit name, frequency, and when you want to start.
           </SheetDescription>
         </SheetHeader>
         <div className="flex flex-1 flex-col gap-5 overflow-y-auto overscroll-contain px-4">
@@ -124,6 +129,7 @@ export function HabitFormSheet({
               ref={titleInputRef}
               name="habit-name"
               autoComplete="off"
+              placeholder="e.g. Morning run, Read 20 pages…"
               value={form.name}
               onChange={(event) =>
                 setForm((prev) => ({ ...prev, name: event.target.value }))
@@ -139,6 +145,7 @@ export function HabitFormSheet({
               id="habit-description"
               name="habit-description"
               autoComplete="off"
+              placeholder="Why this habit matters to you…"
               value={form.description}
               onChange={(event) =>
                 setForm((prev) => ({ ...prev, description: event.target.value }))
@@ -234,7 +241,7 @@ export function HabitFormSheet({
                   );
                 })}
               </div>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs text-muted-foreground/70">
                 Leave empty to apply to all days.
               </p>
             </div>
@@ -300,8 +307,8 @@ export function HabitFormSheet({
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
-          <Button onClick={() => void submitWithMode()} disabled={submitting}>
-            {submitting ? "Saving..." : editingHabitId ? "Save Changes" : "Create Habit"}
+          <Button onClick={() => void onSubmit()} disabled={submitting}>
+            {submitting ? "Saving…" : editingHabitId ? "Save Changes" : "Create Habit"}
           </Button>
         </SheetFooter>
       </SheetContent>

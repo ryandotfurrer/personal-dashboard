@@ -9,13 +9,15 @@ export default function SectionHeader({ title, action, id }: SectionHeaderProps)
     const headingId = id || `section-header-${title.toLowerCase().replace(/\s+/g, '-')}`;
 
     return (
-        <div className="space-y-4">
-            <div className="flex items-center justify-between">
-                <h2 id={headingId} className="text-2xl font-semibold">
-                    {title}
-                </h2>
-                {action}
-            </div>
+        <div className="flex items-center gap-4">
+            <h2
+                id={headingId}
+                className="shrink-0 font-display text-[11px] font-bold uppercase tracking-widest text-muted-foreground"
+            >
+                {title}
+            </h2>
+            <div className="h-px flex-1 bg-border/60" />
+            {action ? <div className="shrink-0">{action}</div> : null}
         </div>
     );
 }

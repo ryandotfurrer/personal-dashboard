@@ -4,7 +4,6 @@ import { useMutation, useQuery } from "convex/react";
 import { useMemo, useState } from "react";
 import { api } from "@/convex/_generated/api";
 import SectionHeader from "@/components/section-header";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { NoteItem } from "../_lib/note-helpers";
 import TagHighlightTextarea from "./tag-highlight-textarea";
@@ -77,11 +76,13 @@ export default function NotesSection() {
   return (
     <section className="flex flex-col gap-6">
       <SectionHeader title="Notes" id="notes" />
-      <Card size="sm">
-        <CardHeader className="pb-0">
-          <CardTitle className="text-base font-semibold">Daily notes</CardTitle>
-        </CardHeader>
-        <CardContent>
+      <article className="hover-glow overflow-hidden rounded-xl bg-card ring-1 ring-foreground/10 shadow-xs focus-within:ring-2 focus-within:ring-primary/25 focus-within:shadow-none motion-reduce:transition-none">
+        <div className="px-4 pt-4 pb-2">
+          <h3 className="font-display text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
+            Daily notes
+          </h3>
+        </div>
+        <div className="px-4 pb-4">
           <TagHighlightTextarea
             value={displayedValue}
             onChange={(event) => {
@@ -97,11 +98,11 @@ export default function NotesSection() {
               setIsFocused(false);
               void syncNotes(latestValue);
             }}
-            placeholder="Write daily notes... use #tags to save important items."
+            placeholder="Write daily notes… use #tags to save important items."
             className="min-h-52"
           />
-        </CardContent>
-      </Card>
+        </div>
+      </article>
     </section>
   );
 }
